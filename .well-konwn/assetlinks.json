@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.applekurdi76_lang.twa",
+        "sha256_cert_fingerprints": ["48:D8:10:AF:40:84:56:F4:95:D8:37:C6:69:27:8E:DD:66:DE:63:02:EB:BF:7A:C9:86:B2:BB:09:F0:DE:32:61"]
+      }
+    }]
