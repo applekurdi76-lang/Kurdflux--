@@ -54,7 +54,7 @@
         .history-section { padding: 0 20px; display: none; margin-bottom: 5px; }
         .history-section.active { display: block; }
         .history-list { display: flex; overflow-x: auto; gap: 12px; padding: 8px 0; scrollbar-width: none; }
-        .history-item { min-width: 55px; text-align: center; }
+        .history-item { min-width: 55px; text-align: center; cursor: pointer; }
         .history-item img { width: 45px; height: 45px; border-radius: 12px; border: 2px solid var(--accent); padding: 3px; background: #fff; object-fit: contain; }
         .history-item span { display: block; font-size: 9px; margin-top: 4px; opacity: 0.7; }
 
@@ -92,7 +92,7 @@
         .ad-card:hover img { opacity: 1; }
         .ad-badge { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: #fff; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent); z-index: 2; }
 
-        .fav-btn { position: absolute; top: 8px; left: 8px; font-size: 16px; color: rgba(255,255,255,0.2); z-index: 5; }
+        .fav-btn { position: absolute; top: 8px; left: 8px; font-size: 16px; color: rgba(255,255,255,0.2); z-index: 5; cursor: pointer; }
         .fav-btn.active { color: #ffcc00; }
 
         #errorToast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: #ff003c; color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 3000; display: none; box-shadow: 0 5px 15px rgba(255,0,60,0.4); }
@@ -137,7 +137,7 @@
 <div class="search-area">
     <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" onkeyup="filter()" placeholder="بگەڕێ...">
+        <input type="text" id="searchInput" oninput="filter()" placeholder="بگەڕێ...">
     </div>
 </div>
 
@@ -161,7 +161,7 @@
             <span id="chNameDisplay" style="color:white; font-size:14px; font-weight:bold;">-</span>
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
-            <button id="turboBtn" onclick="activateTurbo()" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:4px 10px; border-radius:10px; font-size:10px;">TURBO: OFF</button>
+            <button id="turboBtn" onclick="activateTurbo()" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:4px 10px; border-radius:10px; font-size:10px; cursor:pointer;">TURBO: OFF</button>
             <i class="fa-solid fa-expand" onclick="togglePiP()" style="color:white; font-size:16px; cursor:pointer;"></i>
         </div>
     </div>
@@ -182,9 +182,6 @@
     let currentLang = 'ku', allChannels = [], favs = JSON.parse(localStorage.getItem('k_favs')) || [], history = JSON.parse(localStorage.getItem('k_history')) || [], uiTimer, isTurboMode = false;
     let categoryCounts = [0, 0, 0, 0, 0, 0];
 
-    // ----- داتای ڕیکلامەکان (ناوی وێنەکان جێگیرکراون) -----
-    // پێویستە فۆڵدەرێک دروست بکەیت بە ناوی "ads" لەناو پڕۆژەکەت
-    // وێنەکانی ناو فۆڵدەرەکە بەم ناوانە سەیڤ بکە.
     const topAds = [
         { image: 'ads/slide1.jpg', link: '#' },
         { image: 'ads/slide2.jpg', link: '#' },
@@ -195,7 +192,6 @@
         { image: 'ads/banner1.jpg', link: '#' },
         { image: 'ads/banner2.jpg', link: '#' }
     ];
-    // ----------------------------------------------------
 
     let currentAdIndex = 0;
 
@@ -204,11 +200,13 @@
         const indContainer = document.getElementById('adIndicators');
         if(!container || !indContainer) return;
 
+        container.innerHTML = '<div class="ad-indicators" id="adIndicators"></div>';
+        const newIndContainer = document.getElementById('adIndicators');
+
         topAds.forEach((ad, i) => {
             const slide = document.createElement('div');
             slide.className = `ad-slide ${i === 0 ? 'active' : ''}`;
             slide.id = `slide-${i}`;
-            // ئەگەر وێنەکە نەدۆزرایەوە، نوسینێک پیشان دەدات لە شوێنی
             slide.innerHTML = `<img src="${ad.image}" onerror="this.style.display='none'; this.parentElement.innerHTML='ڕیکلامی ${i+1}'" alt="Ad">`;
             slide.onclick = () => { if(ad.link !== '#') window.open(ad.link, '_blank'); };
             container.appendChild(slide);
@@ -216,17 +214,21 @@
             const ind = document.createElement('div');
             ind.className = `ad-indicator ${i === 0 ? 'active' : ''}`;
             ind.id = `ind-${i}`;
-            indContainer.appendChild(ind);
+            newIndContainer.appendChild(ind);
         });
 
         setInterval(() => {
-            document.getElementById(`slide-${currentAdIndex}`).classList.remove('active');
-            document.getElementById(`ind-${currentAdIndex}`).classList.remove('active');
+            const currentSlide = document.getElementById(`slide-${currentAdIndex}`);
+            const currentInd = document.getElementById(`ind-${currentAdIndex}`);
+            if(currentSlide) currentSlide.classList.remove('active');
+            if(currentInd) currentInd.classList.remove('active');
             
             currentAdIndex = (currentAdIndex + 1) % topAds.length;
             
-            document.getElementById(`slide-${currentAdIndex}`).classList.add('active');
-            document.getElementById(`ind-${currentAdIndex}`).classList.add('active');
+            const nextSlide = document.getElementById(`slide-${currentAdIndex}`);
+            const nextInd = document.getElementById(`ind-${currentAdIndex}`);
+            if(nextSlide) nextSlide.classList.add('active');
+            if(nextInd) nextInd.classList.add('active');
         }, 4000);
     }
     setTimeout(initSlider, 500);
@@ -261,7 +263,7 @@
                 categoryCounts[i] = (text.match(/#EXTINF/g) || []).length;
                 if(i === (window.activeCat||0)) parseM3U(text);
                 renderCats();
-            });
+            }).catch(e => console.log("Error loading M3U", e));
         }
     }
 
@@ -278,10 +280,12 @@
 
     async function loadSpecificCat(idx) {
         const paths = ['index.m3u', 'countries/iq.m3u', 'categories/sports.m3u', 'categories/news.m3u', 'categories/kids.m3u', 'categories/movies.m3u'];
-        const res = await fetch(`https://iptv-org.github.io/iptv/${paths[idx]}`);
-        const text = await res.text();
-        parseM3U(text);
-        renderCats();
+        try {
+            const res = await fetch(`https://iptv-org.github.io/iptv/${paths[idx]}`);
+            const text = await res.text();
+            parseM3U(text);
+            renderCats();
+        } catch(e) { console.log(e); }
     }
 
     function parseM3U(data) {
@@ -304,7 +308,6 @@
         let adCounter = 0;
         
         list.slice(0, 400).forEach((ch, index) => {
-            // دانانی ڕیکلامی ناو کەناڵەکان بۆ هەر 12 کەناڵێک
             if (index > 0 && index % 12 === 0) {
                 const ad = inGridAds[adCounter % inGridAds.length];
                 const adDiv = document.createElement('div');
@@ -330,15 +333,149 @@
         });
     }
 
+    // --- فەنکشنە تازەکان و تەواوکراوەکان ---
+
     function playCh(url, name, logo) {
         document.getElementById('playerUI').style.display = 'block';
         document.getElementById('chNameDisplay').innerText = name;
         video.onerror = () => showError();
+        
         if (Hls.isSupported()) {
-            hls.loadSource(url); hls.attachMedia(video);
+            hls.loadSource(url); 
+            hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(showError));
             hls.on(Hls.Events.FRAG_LOADED, (e, d) => {
                 if(d.stats.bw) document.getElementById('speedVal').innerText = (d.stats.bw / (1024*1024)).toFixed(1) + " Mbps";
             });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // بۆ ئامێرەکانی ئەپڵ کە خۆیان HLS ئەخوێننەوە
+            video.src = url;
+            video.addEventListener('loadedmetadata', () => {
+                video.play().catch(showError);
+            });
         }
-        history = [{name, url, logo}, ...history.filter(h => h.url !== url)].slice(0
+
+        // سەیڤکردنی مێژووی سەیرکردن (History)
+        history = [{name, url, logo}, ...history.filter(h => h.url !== url)].slice(0, 15);
+        localStorage.setItem('k_history', JSON.stringify(history));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const sec = document.getElementById('historySection');
+        const list = document.getElementById('historyList');
+        if(history.length === 0) {
+            sec.classList.remove('active');
+            return;
+        }
+        sec.classList.add('active');
+        list.innerHTML = '';
+        history.forEach(h => {
+            const d = document.createElement('div');
+            d.className = 'history-item';
+            d.onclick = () => playCh(h.url, h.name, h.logo);
+            d.innerHTML = `<img src="${h.logo}" onerror="this.src='${historyPlaceholderSVG}'"><span>${h.name.substring(0,8)}</span>`;
+            list.appendChild(d);
+        });
+    }
+
+    function toggleFav(event, name, logo, url) {
+        event.stopPropagation(); // بۆ ئەوەی کەناڵەکە ئیش نەکات کاتێک دەست لە دڵخوازەکان دەدەیت
+        const isFav = favs.find(f => f.url === url);
+        if (isFav) {
+            favs = favs.filter(f => f.url !== url);
+            event.target.classList.remove('active');
+        } else {
+            favs.push({name, logo, url});
+            event.target.classList.add('active');
+        }
+        localStorage.setItem('k_favs', JSON.stringify(favs));
+        
+        // ئەگەر لە پەڕەی دڵخوازەکان بیت، ڕاستەوخۆ نوێی بکەرەوە
+        if (document.getElementById('favNav').classList.contains('active')) {
+            showFavs();
+        }
+    }
+
+    function filter() {
+        const text = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allChannels.filter(c => c.name.toLowerCase().includes(text));
+        renderGrid(filtered);
+    }
+
+    function goHome() {
+        document.getElementById('homeNav').classList.add('active');
+        document.getElementById('favNav').classList.remove('active');
+        document.getElementById('adSlider').style.display = 'block';
+        document.getElementById('historySection').style.display = history.length > 0 ? 'block' : 'none';
+        document.getElementById('catList').style.display = 'flex';
+        renderGrid(allChannels);
+    }
+
+    function showFavs() {
+        document.getElementById('homeNav').classList.remove('active');
+        document.getElementById('favNav').classList.add('active');
+        document.getElementById('adSlider').style.display = 'none';
+        document.getElementById('historySection').style.display = 'none';
+        document.getElementById('catList').style.display = 'none';
+        renderGrid(favs);
+    }
+
+    function closePlayer() {
+        document.getElementById('playerUI').style.display = 'none';
+        video.pause();
+        hls.stopLoad();
+    }
+
+    function showError() {
+        const toast = document.getElementById('errorToast');
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    function toggleUI() {
+        const header = document.querySelector('.player-header');
+        const meter = document.querySelector('.speed-meter');
+        if (header.style.opacity === '0') {
+            header.style.opacity = '1';
+            meter.style.opacity = '1';
+        } else {
+            header.style.opacity = '0';
+            meter.style.opacity = '0';
+        }
+    }
+
+    function activateTurbo() {
+        isTurboMode = !isTurboMode;
+        const btn = document.getElementById('turboBtn');
+        if(isTurboMode) {
+            btn.innerText = "TURBO: ON";
+            btn.style.color = "#00ff00";
+            hls.config.maxMaxBufferLength = 30; // هەوڵدەدات زیاتر لۆد بکات بۆ نەپچڕان
+        } else {
+            btn.innerText = "TURBO: OFF";
+            btn.style.color = "white";
+        }
+    }
+
+    async function togglePiP() {
+        try {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+            } else if (document.pictureInPictureEnabled) {
+                await video.requestPictureInPicture();
+            }
+        } catch(e) {
+            console.log("PiP Error", e);
+        }
+    }
+
+    // دەستپێکردنی بەرنامەکە کاتێک پەڕەکە دەکرێتەوە
+    window.onload = () => {
+        updateLang(currentLang);
+        renderHistory();
+    };
+
+</script>
+</body>
+</html>
